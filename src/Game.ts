@@ -10,6 +10,7 @@ export class Game {
     reelsContainer!: Container;
     symbolSprites!: Sprite[][];
     reelCols!: any[]; // To track spin state
+    backgroundSprite!: Sprite;
     logoSprite!: Sprite;
     spinButton!: Sprite;
     winText!: Text;
@@ -26,10 +27,13 @@ export class Game {
             autoDensity: true,
         });
 
+        this.app.stage.sortableChildren = true;
+
         document.getElementById(containerId)!.appendChild(this.app.canvas);
 
         this.logic = new SlotLogic();
         this.gameContainer = new Container();
+        this.gameContainer.zIndex = 10;
         this.app.stage.addChild(this.gameContainer);
 
         this.symbolSprites = []; // [row][col]
@@ -77,6 +81,7 @@ export class Game {
         this.app.stage.addChild(minimumLoadingTimeText);
 
         const assets = [
+            {alias: 'background', src: 'assets/background.jpg'},
             {alias: 'logo', src: 'assets/logo.png'},
             {alias: 'hv1', src: 'assets/hv1_symbol.png'},
             {alias: 'hv2', src: 'assets/hv2_symbol.png'},
@@ -106,6 +111,13 @@ export class Game {
     }
 
     buildGame() {
+        this.backgroundSprite = new Sprite(Assets.get('background'));
+        this.backgroundSprite.anchor.set(0.5);
+        this.backgroundSprite.zIndex = -10;
+        this.app.stage.addChild(this.backgroundSprite);
+
+        this.gameContainer.zIndex = 10;
+
         this.logoSprite = new Sprite(Assets.get('logo'));
         this.logoSprite.anchor.set(0.5, 0);
         this.gameContainer.addChild(this.logoSprite);
@@ -162,7 +174,7 @@ export class Game {
             style: {
                 fontFamily: 'Arial',
                 fontSize: 28,
-                fill: 0xffd700,
+                fill: 0xff0000,
                 align: 'center',
                 wordWrap: true,
                 wordWrapWidth: 800
@@ -177,6 +189,7 @@ export class Game {
         });
 
         this.setupGUI();
+        this.app.stage.sortableChildren = true;
     }
 
     setupGUI() {
@@ -294,10 +307,20 @@ export class Game {
     }
 
     onResize() {
-        if (!this.gameContainer || !this.winText || !this.logoSprite) return;
+        if (!this.gameContainer || !this.winText || !this.logoSprite || !this.backgroundSprite) return;
 
         const screenWidth = this.app.screen.width;
         const screenHeight = this.app.screen.height;
+
+        this.backgroundSprite.x = screenWidth / 2;
+        this.backgroundSprite.y = screenHeight / 2;
+
+        const backgroundScale = Math.max(
+            screenWidth / this.backgroundSprite.texture.width,
+            screenHeight / this.backgroundSprite.texture.height
+        );
+
+        this.backgroundSprite.scale.set(backgroundScale);
 
         const symbolWidth = 150;
         const symbolHeight = 150;
